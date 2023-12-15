@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- ============================================ -->
+
+        <!-- categorys -->
+
+        <record model="ir.module.category" id="module_category_kasbon_configuration">
+            <field name="name">Kasbon Configuration</field>
+            <field name="sequence">60</field>
+        </record>
+        
+        <record model="ir.module.category" id="module_category_kasbon_extra_rights">
+            <field name="name">Kasbon Extra Rights</field>
+            <field name="sequence">60</field>
+        </record>
+
+        <record model="ir.module.category" id="module_category_kasbon">
+            <field name="name">Kasbon</field>
+            <field name="sequence">60</field>
+            <field name="parent_id" ref="module_category_kasbon_configuration"/>
+        </record>
+
+
+        <!-- groups -->
+
+        <record id="group_approve_1_kasbon" model="res.groups">
+            <field name="name">Approver 1 (Kasbon &amp; PLJ Kasbon)</field>
+            <field name="comment">Access for Approve 1 in Kasbon</field>
+            <field name="category_id" ref="module_category_kasbon_extra_rights"/>
+        </record>
+
+        <record id="group_approve_2_kasbon" model="res.groups">
+            <field name="name">Approver 2 (Kasbon &amp; PLJ Kasbon)</field>
+            <field name="comment">Access for Approve 2 in Kasbon</field>
+            <field name="category_id" ref="module_category_kasbon_extra_rights"/>
+        </record>
+
+        <record id="group_kasir" model="res.groups">
+            <field name="name">Kasir (Kasbon &amp; PLJ Kasbon)</field>
+            <field name="comment">Access for Kasir in Kasbon</field>
+            <field name="category_id" ref="module_category_kasbon_extra_rights"/>
+        </record>
+
+        <record id="group_kasbon_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="category_id" ref="module_category_kasbon"/>
+        </record>
+
+        <record id="group_kasbon_manager_department" model="res.groups">
+            <field name="name">Manager Departemen</field>
+            <field name="category_id" ref="module_category_kasbon"/>
+            <field name="implied_ids" eval="[(4, ref('group_kasbon_user'))]"/>
+        </record>
+        
+        <record id="group_kasbon_administrator" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_kasbon"/>
+            <field name="implied_ids" eval="[(4, ref('group_kasbon_user')), (4, ref('group_kasbon_manager_department'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+
+        <!-- rules -->
+
+        <record id="kasbon_operasional_rule_user" model="ir.rule">
+            <field name="name">kasbon.operasional.user</field>
+            <field name="model_id" ref="ym_kasbon.model_kasbon_operasional"/>
+            <field name="domain_force">[('create_uid', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_kasbon_user'))]"/>
+        </record>
+
+        <record id="lpj_kasbon_operasional_rule_user" model="ir.rule">
+            <field name="name">lpj.kasbon.operasional.user</field>
+            <field name="model_id" ref="ym_kasbon.model_lpj_kasbon_operasional"/>
+            <field name="domain_force">[('create_uid', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_kasbon_user'))]"/>
+        </record>
+
+        <record id="kasbon_operasional_rule_manager_department" model="ir.rule">
+            <field name="name">kasbon.operasional.manager.department</field>
+            <field name="model_id" ref="ym_kasbon.model_kasbon_operasional"/>
+            <field name="domain_force">[('department_id', '=', user.department_id.id)]</field>
+            <field name="groups" eval="[(4, ref('group_kasbon_manager_department'))]"/>
+        </record>
+
+        <record id="lpj_kasbon_operasional_rule_manager_department" model="ir.rule">
+            <field name="name">lpj.kasbon.operasional.manager.department</field>
+            <field name="model_id" ref="ym_kasbon.model_lpj_kasbon_operasional"/>
+            <field name="domain_force">[('department_id', '=', user.department_id.id)]</field>
+            <field name="groups" eval="[(4, ref('group_kasbon_manager_department'))]"/>
+        </record>
+
+        <record id="kasbon_operasional_rule_administrator" model="ir.rule">
+            <field name="name">kasbon.operasional.administrator</field>
+            <field name="model_id" ref="ym_kasbon.model_kasbon_operasional"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_kasbon_administrator'))]"/>
+        </record>
+
+        <record id="lpj_kasbon_operasional_rule_administrator" model="ir.rule">
+            <field name="name">lpj.kasbon.operasional.administrator</field>
+            <field name="model_id" ref="ym_kasbon.model_lpj_kasbon_operasional"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_kasbon_administrator'))]"/>
+        </record>
+    
+    </data>
+</odoo>
