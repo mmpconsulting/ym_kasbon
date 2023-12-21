@@ -3,3 +3,4 @@ access_kasbon_operasional,kasbon_operasional,model_kasbon_operasional,,1,1,1,1
 access_kasbon_operasional_line,kasbon_operasional_line,model_kasbon_operasional_line,,1,1,1,1
 access_lpj_kasbon_operasional,lpj_kasbon_operasional,model_lpj_kasbon_operasional,,1,1,1,1
 access_lpj_kasbon_operasional_line,lpj_kasbon_operasional_line,model_lpj_kasbon_operasional_line,,1,1,1,1
+access_kasbon_settings_user,ym_kasbon.kasbon.settings,model_kasbon_settings,base.group_user,1,1,1,1

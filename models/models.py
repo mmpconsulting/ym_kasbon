@@ -10,6 +10,7 @@ from odoo.osv import expression
 from odoo.tools.float_utils import float_is_zero
 from bisect import bisect_left
 from collections import defaultdict
+from datetime import date
 import re
 
 class AccountMove(models.Model):
@@ -109,6 +110,7 @@ class AccountJournal(models.Model):
 class KasbonOperasional(models.Model):
     _name = 'kasbon.operasional'
     _description = 'Kasbon Operasional'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     def default_diterima(self):
         diterima = False
@@ -125,20 +127,21 @@ class KasbonOperasional(models.Model):
     
     def default_account_credit(self):
         account_credit_kasbon_id = False
-        journal_id = self.env['account.journal'].search([('is_kasbon', '=', True)], limit =1)
-        if journal_id:
-            account_credit_kasbon_id = journal_id.account_credit_kasbon_id.id
+        akun_hutang = self.env.user.company_id.akun_hutang_id
+        if akun_hutang:
+            account_credit_kasbon_id = akun_hutang.id
         return account_credit_kasbon_id
     
-    account_credit_kasbon_id = fields.Many2one('account.account', string='Akun Kas/Bank', ondelete='restrict', default=default_account_credit)
-    date = fields.Date('Tanggal', default=fields.Date.today())
-    name = fields.Char('Nomor', default="/", copy=False)
-    bisnis_unit_id = fields.Many2one('res.company', string='Bisnis Unit', default=lambda self: self.env.company)
-    department_id = fields.Many2one('hr.department', string='Departemen', default=lambda self: self.env.user.department_id)
-    analytic_id = fields.Many2one('account.analytic.account', string='Proyek')
-    analytic_distribution = fields.Json(string='Proyek')
-    analytic_precision = fields.Integer(string='Analytic Precision', store=False, default=lambda self: self.env['decimal.precision'].precision_get("Percentage Analytic"))
-    kasbon_operasional_ids = fields.One2many('kasbon.operasional.line', 'kasbon_id', string='Kasbon Operasional Line')
+    account_credit_kasbon_id = fields.Many2one('account.account', string='Akun Hutang', ondelete='restrict', default=default_account_credit, tracking=True)
+    account_domain = fields.Many2many('account.account', string='Akun Domain', compute='_compute_akun_domain', tracking=True)
+    date = fields.Date('Tanggal', default=fields.Date.today(), tracking=True)
+    name = fields.Char('Nomor', default="/", copy=False, tracking=True)
+    bisnis_unit_id = fields.Many2one('res.company', string='Bisnis Unit', default=lambda self: self.env.company, tracking=True)
+    department_id = fields.Many2one('hr.department', string='Departemen', default=lambda self: self.env.user.department_id, tracking=True)
+    analytic_id = fields.Many2one('account.analytic.account', string='Proyek', tracking=True)
+    analytic_distribution = fields.Json(string='Proyek',tracking=True)
+    analytic_precision = fields.Integer(string='Analytic Precision', store=False, default=lambda self: self.env['decimal.precision'].precision_get("Percentage Analytic"),tracking=True)
+    kasbon_operasional_ids = fields.One2many('kasbon.operasional.line', 'kasbon_id', string='Kasbon Operasional Line',tracking=True)
     state = fields.Selection([
         ('draft', 'Draft'),
         ('submission', 'Submission'),
@@ -146,22 +149,43 @@ class KasbonOperasional(models.Model):
         ('approved_2', 'Approved 2'),
         ('done', 'Done'),
         ('not_approved', 'Not Approved'),
-    ], string='state', default="draft")
+        ('cancel', 'Cancel'),
+    ], string='state', default="draft", tracking=True)
+    kasbon_type = fields.Selection([
+        ('npb', 'NPB'),
+        ('npum', 'NPUM')
+    ], string='Tipe', default='npb', tracking=True)
     analytic_distribution_convert_to_char = fields.Char('Analytic Distribution Convert to Char', compute='_compute_convert_chart')
     
-    company_id = fields.Many2one('res.company', string='Bisnis Unit', default=lambda self: self.env.company)
-    currency_id = fields.Many2one('res.currency', string='Curenncy', compute='_compute_currency_id', store=True)
-    journal_id = fields.Many2one('account.journal', string='Journal', default=default_journal, domain=[('is_kasbon', '=', True)], ondelete='restrict')
-    move_id = fields.Many2one('account.move', string='Joutnal Entries', ondelete='restrict')
+    company_id = fields.Many2one('res.company', string='Bisnis Unit', default=lambda self: self.env.company, tracking=True)
+    currency_id = fields.Many2one('res.currency', string='Curenncy', compute='_compute_currency_id', store=True, tracking=True)
+    # journal_id = fields.Many2one('account.journal', string='Journal', default=default_journal, domain=[('is_kasbon', '=', True)], ondelete='restrict')
+    move_id = fields.Many2one('account.move', string='Journal Entries', ondelete='restrict', tracking=True)
     
-    terbilang = fields.Char('Terbilang :', compute="amount_to_words", readonly=True)
-    note = fields.Text('Note')
-    total = fields.Float('Total :', compute="amount_to_words", readonly=True, store=True)
+    terbilang = fields.Char('Terbilang :', compute="amount_to_words", readonly=True, tracking=True)
+    note = fields.Text('Note', tracking=True)
+    total = fields.Float('Total :', compute="amount_to_words", readonly=True, store=True, tracking=True)
 
-    diketahui_id = fields.Many2one('hr.employee', string='Diketahui oleh')
-    disetujui_id = fields.Many2one('hr.employee', string='Disetujui oleh')
-    diserahkan_id = fields.Many2one('hr.employee', string='Diserahkan oleh', default=default_diterima)
-    diterima_id = fields.Many2one('hr.employee', string='Diterima oleh', default=default_diterima)
+    diketahui_id = fields.Many2one('hr.employee', string='Diketahui oleh', tracking=True)
+    disetujui_id = fields.Many2one('hr.employee', string='Disetujui oleh', tracking=True)
+    diserahkan_id = fields.Many2one('hr.employee', string='Diserahkan oleh', default=default_diterima, tracking=True)
+    diterima_id = fields.Many2one('hr.employee', string='Diterima oleh', default=default_diterima, tracking=True)
+
+    kasbon_payments_widget = fields.Binary(
+        related='move_id.invoice_payments_widget',
+        exportable=False,
+    )
+
+    amount_residual = fields.Monetary(
+        related='move_id.amount_residual',
+        string='Amount Due',
+    )
+
+    payment_state = fields.Selection(
+        related='move_id.payment_state',
+        string="Payment Status",
+    )
+
 
     @api.depends('analytic_distribution')
     def _compute_convert_chart(self):
@@ -178,10 +202,16 @@ class KasbonOperasional(models.Model):
             record.analytic_distribution_convert_to_char = analytic_distribution
 
 
-    @api.depends('journal_id.currency_id')
+    @api.depends('company_id')
     def _compute_currency_id(self):
         for rec in self:
-            rec.currency_id = rec.journal_id.currency_id or rec.company_id.currency_id
+            rec.currency_id = rec.company_id.currency_id
+
+    @api.depends('department_id')
+    def _compute_akun_domain(self):
+        for rec in self:
+            if rec.department_id:
+                rec.account_domain = [Command.set(rec.department_id.account_ids.ids)]
 
     @api.depends('kasbon_operasional_ids', 'kasbon_operasional_ids.jumlah')
     def amount_to_words(self):
@@ -197,46 +227,120 @@ class KasbonOperasional(models.Model):
         res = super(KasbonOperasional, self).create(vals_list)
         return res
     
+    def set_to_draft(self):
+        self.write({'state': 'draft'})
+        if self.move_id:
+            self.move_id.button_draft()
+            self.move_id.button_cancel()
+            self.move_id = False
+    
+    def set_to_cancel(self):
+        self.write({'state': 'cancel'})
+        if self.move_id:
+            self.move_id.button_draft()
+            self.move_id.button_cancel()
+            self.move_id = False
+    
     def set_to_submission(self):
         self.write({'state': 'submission'})
 
     def set_to_approved_1(self):
-        self.write({'state': 'approved_1'})
-
+        if self.disetujui_id.id:
+            if self.env.user.employee_id.id == self.disetujui_id.id:
+                self.write({'state': 'approved_1'})
+            else:
+                raise UserError('Hanya %s yang bisa mengapprove.' % self.disetujui_id.name)
+        else:
+            raise UserError('Tidak ada penyetuju')
+    
 
     def set_to_approved_2(self):
-        self.write({'state': 'approved_2'})
+        if self.disetujui_id.id:
+            if self.env.user.employee_id.id == self.disetujui_id.id:
+                akun_hutang = self.env.user.company_id.akun_hutang_id
+                if akun_hutang:
+                    self.write({
+                        'state': 'approved_2',
+                        'account_credit_kasbon_id': akun_hutang.id
+                    })
+                else:
+                    raise UserError('Tidak ada akun hutang.')
+            else:
+                raise UserError('Hanya %s yang bisa mengapprove.' % self.disetujui_id.name)
+        else:
+            raise UserError('Tidak ada penyetuju')
 
     def set_to_done(self):
         self.write({'state': 'done'})
-        create_journal_entries = self.env['account.move'].create({
+
+        # create_journal_entries = self.env['account.move'].create({
+        #     'ref': self.name,
+        #     # 'journal_id': self.journal_id.id,
+        #     'move_type': 'entry',
+        # })
+        # if create_journal_entries:
+        #     res = [(0,0, {
+        #         'account_id': self.account_credit_kasbon_id.id,
+        #         'currency_id': self.currency_id.id,
+        #         'name': "Kasbon %s %s - %s - %s" % (self.currency_id.symbol, str(self.total), self.diterima_id.name, str(self.date)),
+        #         'analytic_distribution': self.analytic_distribution,
+        #         'debit': self.total,
+        #         'credit': 0,
+        #     }), (0,0, {
+        #         'account_id': self.account_credit_kasbon_id.id,
+        #         'currency_id': self.currency_id.id,
+        #         'name': "Kasbon %s %s - %s - %s" % (self.currency_id.symbol, str(self.total), self.diterima_id.name, str(self.date)),
+        #         'analytic_distribution': self.analytic_distribution,
+        #         'debit': 0,
+        #         'credit': self.total,
+        #     })]
+        #     create_journal_entries.write({'line_ids': res})
+        #     self.move_id = create_journal_entries.id
+        #     create_journal_entries.action_post()
+
+        journal = self.env['account.journal'].search([('is_kasbon', '=', True)], limit =1)
+        partner = self.bisnis_unit_id.partner_id
+        today = date.today()
+        if not journal:
+            journal = self.env['account.journal'].search([('code', 'ilike', 'BILL')], limit =1)
+        create_vendor_bill = self.env['account.move'].create({
             'ref': self.name,
-            'journal_id': self.journal_id.id,
-            'move_type': 'entry',
+            'journal_id': journal.id,
+            'partner_id': partner.id,
+            'move_type': 'in_invoice',
+            'invoice_date': today,
         })
-        if create_journal_entries:
-            res = [(0,0, {
-                'account_id': self.journal_id.account_debit_kasbon_id.id,
-                'currency_id': self.currency_id.id,
-                'name': "Kasbon %s %s - %s - %s" % (self.currency_id.symbol, str(self.total), self.diterima_id.name, str(self.date)),
-                'analytic_distribution': self.analytic_distribution,
-                'debit': self.total,
-                'credit': 0,
-            }), (0,0, {
-                'account_id': self.account_credit_kasbon_id.id,
-                'currency_id': self.currency_id.id,
-                'name': "Kasbon %s %s - %s - %s" % (self.currency_id.symbol, str(self.total), self.diterima_id.name, str(self.date)),
-                'analytic_distribution': self.analytic_distribution,
-                'debit': 0,
-                'credit': self.total,
-            })]
-            create_journal_entries.write({'line_ids': res})
-            self.move_id = create_journal_entries.id
-            create_journal_entries.action_post()
+        if create_vendor_bill:
+            for bon in self.kasbon_operasional_ids:
+                create_vendor_bill.invoice_line_ids = [Command.create({
+                    'account_id': bon.account_id.id,
+                    'currency_id': self.currency_id.id,
+                    'name': bon.name,
+                    'analytic_distribution': self.analytic_distribution,
+                    'price_unit': bon.jumlah,
+                })]
+
+            # REPLACE PAYABLE ACCOUNT TO AKUN HUTANG
+            pay_acc = create_vendor_bill.line_ids.filtered(lambda x: x.account_id.account_type == 'liability_payable')
+            if pay_acc:
+                pay_acc.write({
+                    'account_id': self.account_credit_kasbon_id.id,
+                    'analytic_distribution': self.analytic_distribution,
+                })
+
+            self.move_id = create_vendor_bill.id
+            create_vendor_bill.action_post()
 
 
     def set_to_not_approved(self):
         self.write({'state': 'not_approved'})
+
+    def create_payment_kasbon(self):
+        if self.move_id:
+            self = self.sudo()
+            return self.move_id.line_ids.action_register_payment()
+        else:
+            raise UserError('Tidak ada Jurnal.')
 
 
 
@@ -246,6 +350,7 @@ class KasbonOperasionalLine(models.Model):
     
     kasbon_id = fields.Many2one('kasbon.operasional', string='kasbon', ondelete='cascade')
     name = fields.Char('Uraian')
+    account_id = fields.Many2one('account.account', string='Akun')
     jumlah = fields.Float('Jumlah')
     
 
@@ -294,7 +399,7 @@ class LpjKasbonOperasional(models.Model):
     company_id = fields.Many2one('res.company', string='Bisnis Unit', default=lambda self: self.env.company)
     currency_id = fields.Many2one('res.currency', string='Curenncy', compute='_compute_currency_id')
     journal_id = fields.Many2one('account.journal', string='Journal', default=default_journal, domain=[('is_lpj_kasbon', '=', True)], ondelete='restrict')
-    move_id = fields.Many2one('account.move', string='Joutnal Entries', ondelete='restrict')
+    move_id = fields.Many2one('account.move', string='Journal Entries', ondelete='restrict')
 
     diserahkan_id = fields.Many2one('hr.employee', string='Diserahkan oleh', default=default_diterima)
     diperiksa_id = fields.Many2one('hr.employee', string='Diperikasa oleh')
@@ -431,4 +536,7 @@ class LpjKasbonOperasionalLine(models.Model):
                 l.no_sequence = no
 
     
-
+class HrDepartment(models.Model):
+    _inherit = 'hr.department'
+    
+    account_ids = fields.Many2many('account.account', string='Accounts')

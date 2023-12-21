@@ -1,0 +1,42 @@
+<odoo>
+
+    <data>
+
+        <record id="res_config_settings_view_form_kasbon" model="ir.ui.view">
+            <field name="name">kasbon.settings.view.form.kasbon</field>
+            <field name="model">kasbon.settings</field>
+            <field name="arch" type="xml">
+                <form string="Kasbon Config">
+                    <sheet>
+                        <field name="company_id" invisible="1"/>
+                        <group>
+                            <field name="akun_hutang_id" options="{'no_create': True}" domain="[['reconcile', '=', True],['account_type', '=', 'liability_payable']]" required="1" />
+                        </group>
+                        <footer>
+                            <button string="Apply" type="object" name="execute" class="oe_highlight"/>
+                            <button string="Cancel" type="object" special="cancel" class="oe_link"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="kasbon_settings_action" model="ir.actions.act_window">
+            <field name="name">Kasbon Setting</field>
+            <field name="res_model">kasbon.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem
+            id="kasbon_setting_menu"
+            name="Configuration"
+            action="kasbon_settings_action"
+            groups="account.group_account_manager"
+            parent="kasbon_menu"
+            sequence="999"/>
+    
+    </data>
+    
+
+</odoo>
