@@ -30,6 +30,7 @@
         # 'views/report_bukti_kas_keluar.xml',
         # 'views/report_bukti_kas_masuk.xml',
         'views/views.xml',
+        'views/res_config.xml',
         'views/templates.xml',
     ],
     # only loaded in demonstration mode
