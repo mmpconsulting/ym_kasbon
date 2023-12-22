@@ -212,6 +212,8 @@ class KasbonOperasional(models.Model):
         for rec in self:
             if rec.department_id:
                 rec.account_domain = [Command.set(rec.department_id.account_ids.ids)]
+            else:
+                rec.account_domain = False
 
     @api.depends('kasbon_operasional_ids', 'kasbon_operasional_ids.jumlah')
     def amount_to_words(self):
