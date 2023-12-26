@@ -32,6 +32,8 @@
         'views/views.xml',
         'views/res_config.xml',
         'views/templates.xml',
+        'reports/action.xml',
+        'reports/kasbon_report.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

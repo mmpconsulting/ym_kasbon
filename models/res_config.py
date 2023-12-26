@@ -6,6 +6,10 @@ class ResConfigSettings(models.Model):
 
     akun_hutang_id = fields.Many2one('account.account', readonly=False, related='company_id.akun_hutang_id', string='Akun Hutang')
 
+    def execute(self):
+        res = super(ResConfigSettings, self).execute()
+        pass
+
 class ResCompany(models.Model):
     _inherit = 'res.company'
 

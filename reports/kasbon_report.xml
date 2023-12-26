@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<template id="kasbon_report">
+		<t t-call="web.html_container">
+			<t t-foreach="docs" t-as="o">
+				<div class="page">
+
+					<table style="height: 67px; width: 100%; border-collapse: collapse;" border="0">
+						<tbody>
+							<tr style="height: 67px;">
+								<td style="width: 50%; height: 67px;">
+									<p>
+										<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Solopos_logo.svg/1280px-Solopos_logo.svg.png" alt="logo" width="171" height="24"/>
+									</p>
+									<p>PT. AKSARA SOLOPOS																					
+										<br />Jl. Adisucipto No. 190																					
+										<br />Surakarta																			
+									</p>
+								</td>
+								<td style="width: 50%; height: 67px; text-align: right;">
+									<table style="height: 43px; width: 89.4515%; border-collapse: collapse; float: right;" border="0">
+										<tbody>
+											<tr>
+												<td style="width: 50%; text-align: right;">Nomor : </td>
+												<td style="width: 50%;">
+													<span t-field="o.name"/>
+												</td>
+											</tr>
+											<tr>
+												<td style="width: 50%; text-align: right;">Tanggal : </td>
+												<td style="width: 50%;">
+                                                    <t t-esc="o.date.strftime('%d-%m-%Y')"/>
+                                                </td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<table style="width: 100%;" border="0">
+						<tbody>
+							<tr>
+								<td>
+									<h2 style="text-align: center; border-bottom: 1px solid black;">PENGAJUAN PEMBAYARAN</h2>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<table style="width: 100%; border-collapse: collapse; height: 135px;" border="0">
+						<tbody>
+							<tr style="height: 18px;">
+								<td style="width: 22.2917%; text-align: left; height: 18px;">Nama</td>
+								<td style="width: 2.70833%; text-align: left; height: 18px;">:</td>
+								<td style="width: 25.4166%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.create_uid.employee_id.name"/></td>
+								<td style="width: 4.01054%;"></td>
+								<td style="width: 15.0521%; height: 18px;">Dibayarkan Kepada</td>
+								<td style="width: 2.5%;">:</td>
+								<td style="width: 25%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.bisnis_unit_id.name"/></td>
+							</tr>
+							<tr style="height: 18px;">
+								<td style="width: 22.2917%; height: 18px;">NIK</td>
+								<td style="width: 2.70833%; height: 18px;">:</td>
+								<td style="width: 25.4166%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.create_uid.employee_id.identification_id"/></td>
+								<td style="width: 4.01054%;"></td>
+								<td style="width: 15.0521%; height: 18px;">Kurs</td>
+								<td style="width: 2.5%;">:</td>
+								<td style="width: 25%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.currency_id.name"/></td>
+							</tr>
+							<tr style="height: 18px;">
+								<td style="width: 22.2917%; height: 18px;">Nama Bagian</td>
+								<td style="width: 2.70833%; height: 18px;">:</td>
+								<td style="width: 25.4166%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.department_id.name"/></td>
+								<td style="width: 4.01054%;"></td>
+								<td style="width: 15.0521%; height: 18px;"></td>
+								<td style="width: 2.5%;"></td>
+								<td style="width: 25%; height: 18px;"></td>
+							</tr>
+							<tr style="height: 18px;">
+								<td style="width: 22.2917%; height: 18px;">Keterangan</td>
+								<td style="width: 2.70833%; height: 18px;">:</td>
+								<td style="width: 25.4166%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.note"/></td>
+								<td style="width: 4.01054%;"></td>
+								<td style="width: 15.0521%; height: 18px;"></td>
+								<td style="width: 2.5%;"></td>
+								<td style="width: 25%; height: 18px;"></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<br/>
+					
+                    <table style="border-collapse: collapse; width: 100%; height: 54px;" border="1">
+						<tbody>
+							<tr style="height: 18px;">
+								<td style="width: 7.50004%; height: 18px; text-align: center;">
+									<strong>No.</strong>
+								</td>
+								<td style="width: 32.2916%; height: 18px; text-align: center;">
+									<strong>Keterangan</strong>
+								</td>
+								<td style="width: 20.8334%; height: 18px; text-align: center;">
+									<strong>Jenis Biaya</strong>
+								</td>
+								<td style="width: 13.125%; height: 18px; text-align: center;">
+									<strong>Nilai</strong>
+								</td>
+								<td style="width: 9.58337%; height: 18px; text-align: center;">
+									<strong>Kurs</strong>
+								</td>
+								<td style="width: 16.6667%; height: 18px; text-align: center;">
+									<strong>Jumlah</strong>
+								</td>
+							</tr>
+                            <t t-foreach="o.kasbon_operasional_ids" t-as="line">
+                                <t t-set="index" t-value="line_index + 1"/>
+                                <tr style="height: 18px;">
+                                    <td style="width: 7.50004%; height: 18px; text-align: center;"><t t-esc="index"/></td>
+                                    <td style="width: 32.2916%; height: 18px;"><t t-esc="line.name"/></td>
+                                    <td style="width: 20.8334%; height: 18px;"> <t t-esc="line.account_id.name"/></td>
+                                    <td style="width: 13.125%; height: 18px; text-align: right;"><t t-esc="'{:0,.2f}'.format(line.jumlah)"/></td>
+                                    <td style="width: 9.58337%; height: 18px; text-align: right;">1</td>
+                                    <td style="width: 16.6667%; height: 18px; text-align: right;"><t t-esc="'{:0,.2f}'.format(line.jumlah)"/></td>
+                                </tr>
+                            </t>
+						</tbody>
+					</table>
+                    <table style="border-collapse: collapse; width: 100%;" border="1">
+						<tbody>
+							<tr>
+								<td style="width: 83.3333%; text-align: center;">
+									<strong>Total</strong>
+								</td>
+								<td style="width: 16.6667%; text-align: right;"><t t-esc="'{:0,.2f}'.format(sum(o.kasbon_operasional_ids.mapped('jumlah')))"/></td>
+							</tr>
+						</tbody>
+					</table>
+					
+                    <br/>
+					
+                    <p>Terbilang :</p>
+					<table style="height: 39px; width: 88.125%; border-collapse: collapse; margin-top: -40px; float: right; background: lightgrey;" border="1">
+						<tbody>
+							<tr>
+								<td style="width: 100%;"><span t-field="o.terbilang"/></td>
+							</tr>
+						</tbody>
+					</table>
+					
+                    <br/>
+					
+                    <table style="border-collapse: collapse; width: 100%; height: 78px;" border="1">
+						<tbody>
+							<tr>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>Pemohon</strong>
+								</td>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>Atasan Pemohon</strong>
+								</td>
+								<td style="width: 12.5%; text-align: center; "></td>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>Keuangan</strong>
+								</td>
+								<td style="width: 12.5%; text-align: center; "></td>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>Diterima Oleh:</strong>
+								</td>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>Akuntansi</strong>
+                                </td>
+								<td style="width: 12.5%; text-align: center; "></td>
+							</tr>
+							<tr style="height: 78px;">
+								<td style="width: 12.5%; height: 78px; text-align: center; "></td>
+								<td style="width: 12.5%; height: 78px; text-align: center; "></td>
+								<td style="width: 12.5%; height: 78px; text-align: center;  vertical-align: top;">Diperiksa Oleh:</td>
+								<td style="width: 12.5%; height: 78px; text-align: center;  vertical-align: top;">Disetujui Oleh:</td>
+								<td style="width: 12.5%; height: 78px; text-align: center;  vertical-align: top;">Disetujui Oleh:</td>
+								<td style="width: 12.5%; height: 78px; text-align: center; "></td>
+								<td style="width: 12.5%; height: 78px; text-align: center;  vertical-align: top;">Dibukukan Oleh:</td>
+								<td style="width: 12.5%; height: 78px; text-align: center;  vertical-align: top;">Disetujui Oleh:</td>
+							</tr>
+							<tr>
+								<td style="width: 12.5%; text-align: center; "><span t-field="o.create_uid.name"/></td>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>Manager</strong>
+								</td>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>Staf/Kasir</strong>
+								</td>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>Manager</strong>
+								</td>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>GM/Direktur</strong>
+								</td>
+								<td style="width: 12.5%; text-align: center; "></td>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>Staf</strong>
+								</td>
+								<td style="width: 12.5%; text-align: center; ">
+									<strong>Manager</strong>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+			</t>
+		</t>
+	</template>
+</odoo>

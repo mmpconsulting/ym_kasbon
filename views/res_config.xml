@@ -6,7 +6,7 @@
             <field name="name">kasbon.settings.view.form.kasbon</field>
             <field name="model">kasbon.settings</field>
             <field name="arch" type="xml">
-                <form string="Kasbon Config">
+                <form string="NPB / NPUM Config">
                     <sheet>
                         <field name="company_id" invisible="1"/>
                         <group>
@@ -33,7 +33,7 @@
             name="Configuration"
             action="kasbon_settings_action"
             groups="account.group_account_manager"
-            parent="kasbon_menu"
+            parent="parent_kasbon_menu"
             sequence="999"/>
     
     </data>

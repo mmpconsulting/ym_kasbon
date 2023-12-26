@@ -29,8 +29,11 @@
       <field name="inherit_id" ref="hr.view_department_form"/>
       <field name="arch" type="xml">
         <xpath expr="//sheet" position="inside">
-            <group name="accounts" string="Akun" >
-              <field name="account_ids" nolabel="1" colspan="2" groups="account.group_account_manager"/>
+            <group name="accounts" string="NPUM Akun" >
+              <field name="npum_account_id" groups="account.group_account_manager"/>
+            </group>
+            <group name="accounts" string="NPB Akun" >
+              <field name="npb_account_ids" nolabel="1" colspan="2" groups="account.group_account_manager"/>
             </group>
         </xpath>
       </field>
@@ -45,7 +48,7 @@
           <field name="is_kasbon"/>
           <field name="is_lpj_kasbon"/>
         </xpath>
-        <xpath expr="//page[@name='advanced_settings']" position="after">
+        <!-- <xpath expr="//page[@name='advanced_settings']" position="after">
           <page name="kasbon_settings" string="Kasbon Settings" invisible="is_lpj_kasbon == False and is_kasbon == False">
             <group name="kasbon_detail">
               <group name="kasbon_information" string="Kasbon Information">
@@ -55,11 +58,11 @@
               </group>
             </group>
           </page>
-        </xpath>
-        <xpath expr="//field[@name='country_code']" position="after">
+        </xpath> -->
+        <!-- <xpath expr="//field[@name='country_code']" position="after">
           <field name="judul_report" />
           <field name="opsi_print" />
-        </xpath>
+        </xpath> -->
       </field>
     </record>
 
@@ -67,14 +70,18 @@
       <field name="name">kasbon.operasional.view.tree</field>
       <field name="model">kasbon.operasional</field>
       <field name="arch" type="xml">
-        <tree string="Kasbon Operasional">
+        <tree>
           <field name="date" />
           <field name="name" />
           <field name="company_id" />
           <field name="department_id" />
-          <field name="analytic_id" invisible="1"/>
+          <field name="kasbon_type" />
           <field name="analytic_distribution" widget="analytic_distribution"/>
-          <field name="state" />
+          <field name="state" widget="badge" 
+            decoration-muted="state == 'draft'" 
+            decoration-info="state == 'submission'" 
+            decoration-success="state == 'done'" 
+            decoration-danger="state == 'cancel'"/>
         </tree>
       </field>
     </record>
@@ -86,22 +93,24 @@
         <form string="Kasbon Operasional">
           <header>
               <button name="set_to_submission" invisible="state != 'draft'" string="Submit" class="btn-primary" type="object" />
-              <button name="set_to_approved_1" invisible="state != 'submission'" string="Approver 1" class="btn-primary" type="object" groups="ym_kasbon.group_approve_1_kasbon"/>
-              <button name="set_to_approved_2" invisible="state != 'approved_1'" string="Approver 2" class="btn-primary" type="object" groups="ym_kasbon.group_approve_2_kasbon"/>
-              <button name="set_to_not_approved" invisible="state != 'submission'" string="Not Approve"  type="object" groups="ym_kasbon.group_approve_1_kasbon"/>
-              <button name="set_to_not_approved" invisible="state != 'approved_1'" string="Not Approve"  type="object" groups="ym_kasbon.group_approve_2_kasbon"/>
-              <button name="set_to_done" invisible="state != 'approved_2'" string="Set to Done" class="btn-primary" type="object" groups="ym_kasbon.group_kasir"/>
-              <button name="set_to_draft" invisible="state in ['draft']" string="Set to Draft" type="object" />
+              <button name="set_to_done" invisible="state != 'submission'" string="Set to Done" class="btn-primary" type="object" groups="ym_kasbon.group_kasir"/>
+              <button name="set_to_draft" invisible="state == 'draft'" string="Set to Draft" type="object" />
               <button name="set_to_cancel" invisible="state in ['done', 'cancel']" string="Cancel" type="object" />
-              <button name="create_payment_kasbon" class="oe_highlight" invisible="not move_id or move_id == False or payment_state != 'not_paid'" string="Create Payment" type="object" />
-              <field name="state" widget="statusbar" statusbar_visible="draft,submission,approved_1,approved_2,done"/>
+              <button name="create_payment_kasbon" class="oe_highlight" invisible="not move_id or move_id == False or payment_state not in ['not_paid', 'partial']" string="Create Payment" type="object" />
+              <field name="state" widget="statusbar" statusbar_visible="draft,submission,done"/>
           </header>
           <sheet>
             <field name="account_domain" invisible="1"/>
             <field name="payment_state" invisible="1"/>
+            <span class="o_form_label">Name</span>
+            <div class="oe_title">
+                <h1>
+                    <field name="name" readonly="1"/>
+                </h1>
+            </div>
             <group name="header">
               <group name="kasbon_left">
-                <field name="name" readonly="1"/>
+                <field name="kasbon_type" required="1" readonly="state != 'draft'"/>
                 <field name="bisnis_unit_id" required="1" readonly="state != 'draft'"/>
                 <field name="department_id" readonly="state != 'draft'"/>
                 <field name="analytic_id" readonly="state != 'draft'" invisible="1"/>
@@ -110,9 +119,8 @@
               </group>
               <group name="kasbon_right">
                 <field name="date" required="1" readonly="state != 'draft'"/>
-                <!-- <field name="journal_id" readonly="state != 'approved_2'" invisible="state not in ['approved_2', 'done']" required="state in ['approved_2', 'done']"/> -->
-                <field name="kasbon_type" required="1" readonly="state != 'draft'"/>
-                <field name="account_credit_kasbon_id" readonly="1" force_save="1" invisible="state not in ['approved_2', 'done']"/>
+                <field name="account_credit_kasbon_id" readonly="1" force_save="1" invisible="state == 'draft'"/>
+                <field name="journal_id" invisible="1"/>
               </group>
             </group>
             <notebook>
@@ -143,18 +151,19 @@
               <page name="other" string="Other">
                 <group name="info">
                   <group name="info_detail_left">
-                    <field name="diketahui_id" readonly="state != 'draft'"/>
-                    <field name="disetujui_id" required="1" readonly="state != 'draft'"/>
-                    <field name="diserahkan_id" readonly="state != 'draft'"/>
-                    <field name="diterima_id" readonly="state != 'draft'"/>
-                  </group>
-                  <group name="info_detail_right">
                     <field name="create_uid" invisible="1"/>
                     <field name="company_id" invisible="1" required="1"/>
                     <field name="currency_id" invisible="1"/>
                     <field name="analytic_precision" invisible="1"/>
                     <field name="move_id" invisible="not move_id or move_id == False" readonly="1"/>
                   </group>
+                  <!-- <group name="info_detail_right">
+                    <field name="create_uid" invisible="1"/>
+                    <field name="company_id" invisible="1" required="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="analytic_precision" invisible="1"/>
+                    <field name="move_id" invisible="not move_id or move_id == False" readonly="1"/>
+                  </group> -->
                 </group>
               </page>
             </notebook>
@@ -175,10 +184,15 @@
         <tree string="LPJ Kasbon Operasional">
           <field name="name" />
           <field name="date" />
-          <field name="kasbon_id" />
+          <field name="kasbon_id" string="No. NPUM"/>
           <field name="department_id" />
-          <field name="analytic_id" invisible="1" />
+          <!-- <field name="analytic_id" invisible="1" /> -->
           <field name="analytic_distribution" widget="analytic_distribution"/>
+          <field name="state" widget="badge" 
+            decoration-muted="state == 'draft'" 
+            decoration-info="state == 'submission'" 
+            decoration-danger="state == 'cancel'"
+            decoration-success="state == 'done'"/>
         </tree>
       </field>
     </record>
@@ -190,14 +204,18 @@
         <form string="LPJ Kasbon Operasional">
           <header>
               <button name="set_to_submission" invisible="state != 'draft'" string="Submit" class="btn-primary" type="object" />
-              <button name="set_to_approved_1" invisible="state != 'submission'" string="Approver 1" class="btn-primary" type="object" groups="ym_kasbon.group_approve_1_kasbon"/>
+              <!-- <button name="set_to_approved_1" invisible="state != 'submission'" string="Approver 1" class="btn-primary" type="object" groups="ym_kasbon.group_approve_1_kasbon"/>
               <button name="set_to_approved_2" invisible="state != 'approved_1'" string="Approver 2" class="btn-primary" type="object" groups="ym_kasbon.group_approve_2_kasbon"/>
               <button name="set_to_not_approved" invisible="state != 'submission'" string="Not Approve"  type="object" groups="ym_kasbon.group_approve_1_kasbon"/>
-              <button name="set_to_not_approved" invisible="state != 'approved_1'" string="Not Approve"  type="object" groups="ym_kasbon.group_approve_2_kasbon"/>
-              <button name="set_to_done" invisible="state != 'approved_2'" string="Set to Done" class="btn-primary" type="object" groups="ym_kasbon.group_kasir"/>
-              <field name="state" widget="statusbar" statusbar_visible="draft,submission,approved_1,approved_2,done"/>
+              <button name="set_to_not_approved" invisible="state != 'approved_1'" string="Not Approve"  type="object" groups="ym_kasbon.group_approve_2_kasbon"/> -->
+              <button name="set_to_done" invisible="state != 'submission'" string="Set to Done" class="btn-primary" type="object" groups="ym_kasbon.group_kasir"/>
+              <button name="create_payment_lpj" class="oe_highlight" invisible="not move_id or move_id == False or payment_state not in ['not_paid', 'partial']" string="Create Payment" type="object" />
+              <button name="set_to_draft" invisible="state == 'draft'" string="Set to Draft" type="object" />
+              <button name="set_to_cancel" invisible="state in ['done', 'cancel']" string="Cancel" type="object" />
+              <field name="state" widget="statusbar" statusbar_visible="draft,submission,done"/>
           </header>
           <sheet>
+            <field name="payment_state" invisible="1"/>
             <span class="o_form_label">Name</span>
             <div class="oe_title">
                 <h1>
@@ -215,7 +233,7 @@
               </group>
               <group name="kasbon_right">
                 <field name="date" required="1" readonly="state != 'draft'"/>
-                <field name="journal_id" readonly="state != 'approved_2'" invisible="state not in ['approved_2', 'done']" required="state in ['approved_2', 'done']"/>
+                <field name="journal_id" invisible="1"/>
               </group>
             </group>
             <notebook>
@@ -227,7 +245,7 @@
                     <field name="ket" />
                     <field name="account_id" required="1"/>
                     <field name="currency_id" invisible="1"/>
-                    <field name="diserahkan_id" invisible="1"/>
+                    <!-- <field name="diserahkan_id" invisible="1"/> -->
                     <field name="jumlah" sum="Total"/>
                   </tree>
                 </field>
@@ -243,6 +261,7 @@
                             <field name="jumlah_kasbon" nolabel="1" colspan="2"/>
 
                             <field name="total_pertanggungjawaban" colspan="2" nolabel="1"/>
+                            <field name="lpj_payments_widget" colspan="2" nolabel="1" widget="payment"/>
                             <field name="lebih_kurang_bayar" class="oe_subtotal_footer_separator"/>
                         </group>
                     </group>
@@ -252,22 +271,32 @@
               <page name="other" string="Other">
                 <group name="info">
                   <group name="info_detail_left">
-                    <field name="diserahkan_id" readonly="state != 'draft'"/>
-                    <field name="diperiksa_id" readonly="state != 'draft'"/>
-                    <field name="disetujui_id" readonly="state != 'draft'"/>
-                    <field name="dibukukan_id" readonly="state != 'draft'"/>
-                  </group>
-                  <group name="info_detail_right">
                     <field name="create_uid" invisible="1"/>
                     <field name="company_id" invisible="1" required="1"/>
                     <field name="currency_id" invisible="1"/>
                     <field name="analytic_precision" invisible="1"/>
                     <field name="move_id" invisible="not move_id or move_id == False" readonly="1"/>
+                    <!-- <field name="diserahkan_id" readonly="state != 'draft'"/>
+                    <field name="diperiksa_id" readonly="state != 'draft'"/>
+                    <field name="disetujui_id" readonly="state != 'draft'"/>
+                    <field name="dibukukan_id" readonly="state != 'draft'"/> -->
                   </group>
+                  <!-- <group name="info_detail_right">
+                    <field name="create_uid" invisible="1"/>
+                    <field name="company_id" invisible="1" required="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="analytic_precision" invisible="1"/>
+                    <field name="move_id" invisible="not move_id or move_id == False" readonly="1"/>
+                  </group> -->
                 </group>
               </page>
             </notebook>
           </sheet>
+          <div class="oe_chatter">
+              <field name="message_follower_ids" groups="base.group_user"/>
+              <field name="activity_ids"/>
+              <field name="message_ids"/>
+          </div>
         </form>
       </field>
     </record>
@@ -275,7 +304,7 @@
     <record id="sequence_kasbon_seq" model="ir.sequence">
         <field name="name">Kasbon Operasional</field>
         <field name="code">kasbon.operasional</field>
-        <field name="suffix">/KSB/JV/%(year)s</field>
+        <field name="suffix">/KSB/%(year)s</field>
         <field name="padding">3</field>
     </record>
 
@@ -286,20 +315,11 @@
         <field name="padding">3</field>
     </record>
 
-    <record id="kasbon_npb_action" model="ir.actions.act_window">
-      <field name="name">Kasbon NPB</field>
+    <record id="npb_npum_action" model="ir.actions.act_window">
+      <field name="name">NPB / NPUM</field>
       <field name="res_model">kasbon.operasional</field>
       <field name="view_mode">tree,form</field>
-      <field name="domain">[('kasbon_type', '=', 'npb'),('state', '!=', 'cancel')]</field>
-      <field name="context">{'default_kasbon_type': 'npb'}</field>
-    </record>
-
-    <record id="kasbon_npum_action" model="ir.actions.act_window">
-      <field name="name">Kasbon NPUM</field>
-      <field name="res_model">kasbon.operasional</field>
-      <field name="view_mode">tree,form</field>
-      <field name="domain">[('kasbon_type', '=', 'npum'),('state', '!=', 'cancel')]</field>
-      <field name="context">{'default_kasbon_type': 'npum'}</field>
+      <field name="domain">[('kasbon_type', 'in', ['npb','npum'])]</field>
     </record>
 
     <record id="lpj_kasbon_operasional_action" model="ir.actions.act_window">
@@ -309,39 +329,25 @@
     </record>
 
     <menuitem
-      id="kasbon_menu"
-      name="Kasbon"
+      id="parent_kasbon_menu"
+      name="NPB / NPUM"
       web_icon="ym_kasbon,static/description/icon_kasbon.png"
       groups="ym_kasbon.group_kasbon_user,ym_kasbon.group_kasbon_manager_department,ym_kasbon.group_kasbon_administrator"
       sequence="5"/>
     
     <menuitem
-      id="kasbon_operasional_menu"
-      name="Kasbon Operasional"
-      action="kasbon_npb_action"
-      parent="kasbon_menu"
+      id="npb_npum_menu"
+      name="NPB / NPUM"
+      action="npb_npum_action"
+      parent="parent_kasbon_menu"
       groups="ym_kasbon.group_kasbon_user,ym_kasbon.group_kasbon_manager_department,ym_kasbon.group_kasbon_administrator"
       sequence="1"/>
     
     <menuitem
-      id="kasbon_npb_menu"
-      name="NPB"
-      action="kasbon_npb_action"
-      parent="kasbon_operasional_menu"
-      sequence="1"/>
-    
-    <menuitem
-      id="kasbon_npum_menu"
-      name="NPUM"
-      action="kasbon_npum_action"
-      parent="kasbon_operasional_menu"
-      sequence="2"/>
-
-    <menuitem
       id="lpj_kasbon_operasional_menu"
       name="LPJ Kasbon Operasional"
       action="lpj_kasbon_operasional_action"
-      parent="kasbon_menu"
+      parent="parent_kasbon_menu"
       groups="ym_kasbon.group_kasbon_user,ym_kasbon.group_kasbon_manager_department,ym_kasbon.group_kasbon_administrator"
       sequence="2"/>
 

@@ -16,7 +16,7 @@
           <field name="dpi">90</field>
       </record>
 
-        <record id="print_report_bukti_bank_keluar" model="ir.actions.report">
+        <!-- <record id="print_report_bukti_bank_keluar" model="ir.actions.report">
             <field name="name">Bukti Bank Keluar (BBK)</field>
             <field name="model">account.move</field>
             <field name="report_type">qweb-pdf</field>
@@ -62,7 +62,7 @@
             <field name="binding_model_id" ref="account.model_account_move"/>
             <field name="binding_type">report</field>
             <field name="paperformat_id" ref="paperformat_european_a5_potrait" />
-        </record>
+        </record> -->
 
 
       
