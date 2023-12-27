@@ -3,7 +3,8 @@
 	<template id="kasbon_report">
 		<t t-call="web.html_container">
 			<t t-foreach="docs" t-as="o">
-				<div class="page">
+                <t t-set="o" t-value="o.sudo()"/>
+				<div class="page" style="font-size: 8pt !important; font-family:Arial;">
 
 					<table style="height: 67px; width: 100%; border-collapse: collapse;" border="0">
 						<tbody>
@@ -52,40 +53,40 @@
 					<table style="width: 100%; border-collapse: collapse; height: 135px;" border="0">
 						<tbody>
 							<tr style="height: 18px;">
-								<td style="width: 22.2917%; text-align: left; height: 18px;">Nama</td>
-								<td style="width: 2.70833%; text-align: left; height: 18px;">:</td>
-								<td style="width: 25.4166%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.create_uid.employee_id.name"/></td>
-								<td style="width: 4.01054%;"></td>
-								<td style="width: 15.0521%; height: 18px;">Dibayarkan Kepada</td>
-								<td style="width: 2.5%;">:</td>
-								<td style="width: 25%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.bisnis_unit_id.name"/></td>
+								<td style="width: 16.4584%; text-align: left; height: 18px;">Nama</td>
+								<td style="width: 2.91666%; text-align: left; height: 18px;">:</td>
+								<td style="width: 22.5%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.create_uid.employee_id.name"/></td>
+								<td style="width: 3.38553%;"></td>
+								<td style="width: 26.0938%; height: 18px;">Dibayarkan Kepada</td>
+								<td style="width: 2.29166%;">:</td>
+								<td style="width: 23.3334%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.bisnis_unit_id.name"/></td>
 							</tr>
 							<tr style="height: 18px;">
-								<td style="width: 22.2917%; height: 18px;">NIK</td>
-								<td style="width: 2.70833%; height: 18px;">:</td>
-								<td style="width: 25.4166%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.create_uid.employee_id.identification_id"/></td>
-								<td style="width: 4.01054%;"></td>
-								<td style="width: 15.0521%; height: 18px;">Kurs</td>
-								<td style="width: 2.5%;">:</td>
-								<td style="width: 25%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.currency_id.name"/></td>
+								<td style="width: 16.4584%; height: 18px;">NIK</td>
+								<td style="width: 2.91666%; height: 18px;">:</td>
+								<td style="width: 22.5%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.create_uid.employee_id.identification_id"/></td>
+								<td style="width: 3.38553%;"></td>
+								<td style="width: 26.0938%; height: 18px;">Kurs</td>
+								<td style="width: 2.29166%;">:</td>
+								<td style="width: 23.3334%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.currency_id.name"/></td>
 							</tr>
 							<tr style="height: 18px;">
-								<td style="width: 22.2917%; height: 18px;">Nama Bagian</td>
-								<td style="width: 2.70833%; height: 18px;">:</td>
-								<td style="width: 25.4166%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.department_id.name"/></td>
-								<td style="width: 4.01054%;"></td>
-								<td style="width: 15.0521%; height: 18px;"></td>
-								<td style="width: 2.5%;"></td>
-								<td style="width: 25%; height: 18px;"></td>
+								<td style="width: 16.4584%; height: 18px;">Nama Bagian</td>
+								<td style="width: 2.91666%; height: 18px;">:</td>
+								<td style="width: 22.5%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.department_id.name"/></td>
+								<td style="width: 3.38553%;"></td>
+								<td style="width: 26.0938%; height: 18px;"></td>
+								<td style="width: 2.29166%;"></td>
+								<td style="width: 23.3334%; height: 18px;"></td>
 							</tr>
 							<tr style="height: 18px;">
-								<td style="width: 22.2917%; height: 18px;">Keterangan</td>
-								<td style="width: 2.70833%; height: 18px;">:</td>
-								<td style="width: 25.4166%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.note"/></td>
-								<td style="width: 4.01054%;"></td>
-								<td style="width: 15.0521%; height: 18px;"></td>
-								<td style="width: 2.5%;"></td>
-								<td style="width: 25%; height: 18px;"></td>
+								<td style="width: 16.4584%; height: 18px;">Keterangan</td>
+								<td style="width: 2.91666%; height: 18px;">:</td>
+								<td style="width: 22.5%; height: 18px; border-bottom: 1px solid black;"><span t-field="o.note"/></td>
+								<td style="width: 3.38553%;"></td>
+								<td style="width: 26.0938%; height: 18px;"></td>
+								<td style="width: 2.29166%;"></td>
+								<td style="width: 23.3334%; height: 18px;"></td>
 							</tr>
 						</tbody>
 					</table>
